@@ -25,10 +25,12 @@ app.use(cookieParser());
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // page routers
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const indexRouter = require('./routes/index');
+const wikiRouter = require('./routes/wiki');
+const catalogRouter = require('./routes/catalog');
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/wiki', wikiRouter);
+app.use('/catalog', catalogRouter);
 
 // db
 const mongoDB = 'mongodb://localhost:27017/express_db';

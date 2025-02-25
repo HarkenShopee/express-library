@@ -17,9 +17,15 @@ dependencies:
   express:
     specifier: ~4.16.1
     version: 4.16.1
+  express-async-handler:
+    specifier: ^1.2.0
+    version: 1.2.0
   http-errors:
     specifier: ~1.6.3
     version: 1.6.3
+  luxon:
+    specifier: ^3.5.0
+    version: 3.5.0
   mongoose:
     specifier: ^8.10.1
     version: 8.10.1
@@ -342,6 +348,10 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
+  /express-async-handler@1.2.0:
+    resolution: {integrity: sha512-rCSVtPXRmQSW8rmik/AIb2P0op6l7r1fMW538yyvTMltCO4xQEWMmobfrIxN2V1/mVrgxB8Az3reYF6yUZw37w==}
+    dev: false
+
   /express@4.16.1:
     resolution: {integrity: sha512-STB7LZ4N0L+81FJHGla2oboUHTk4PaN1RsOkoRh9OSeEKylvF5hwKYVX1xCLFaCT7MD0BNG/gX2WFMLqY6EMBw==}
     engines: {node: '>= 0.10.0'}
@@ -587,6 +597,11 @@ packages:
   /kareem@2.6.3:
     resolution: {integrity: sha512-C3iHfuGUXK2u8/ipq9LfjFfXFxAZMQJJq7vLS45r3D9Y2xQ/m4S8zaR4zMLFWh9AsNPXmcFfUDhTEO8UIC/V6Q==}
     engines: {node: '>=12.0.0'}
+    dev: false
+
+  /luxon@3.5.0:
+    resolution: {integrity: sha512-rh+Zjr6DNfUYR3bPwJEnuwDdqMbxZW7LOQfUN4B54+Cl+0o5zaU9RJ6bcidfDtC1cWCZXQ+nvX8bf6bAji37QQ==}
+    engines: {node: '>=12'}
     dev: false
 
   /math-intrinsics@1.1.0:
