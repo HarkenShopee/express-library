@@ -4,6 +4,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const mongoose = require('mongoose');
 
 // create express app
 var app = express();
@@ -28,6 +29,13 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+
+// db
+const mongoDB = 'mongodb://localhost:27017/express_db';
+mongoose.connect(mongoDB);
+mongoose.Promise = global.Promise;
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, '[error][db]:'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

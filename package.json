@@ -5,13 +5,18 @@
   "scripts": {
     "start": "node ./bin/www",
     "devstart": "nodemon ./bin/www",
-    "dev": "DEBUG=helloworld:* pnpm devstart"
+    "dev": "DEBUG=helloworld:* pnpm devstart",
+    "db-start": "brew services start mongodb-community",
+    "db-stop": "brew services stop mongodb-community",
+    "db-restart": "brew services restart mongodb-community"
   },
   "dependencies": {
+    "async": "^3.2.6",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
+    "mongoose": "^8.10.1",
     "morgan": "~1.9.1",
     "pug": "^3.0.3"
   },
