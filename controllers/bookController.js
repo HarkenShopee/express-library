@@ -2,11 +2,11 @@ const Book = require("../models/book");
 const Author = require("../models/author");
 const Genre = require("../models/genre");
 const BookInstance = require("../models/bookinstance");
+const { body, validationResult } = require("express-validator");
 
 const asyncHandler = require("express-async-handler");
 
 exports.index = asyncHandler(async (req, res, next) => {
-  // 并行获取书的详细信息、书实例、作者和体裁的数量
   const [
     numBooks,
     numBookInstances,
@@ -31,8 +31,6 @@ exports.index = asyncHandler(async (req, res, next) => {
   });
 });
 
-
-// 呈现数据库中所有书本的列表
 exports.bookList = asyncHandler(async (req, res, next) => {
   const allBooks = await Book.find({}, "title author")
     .sort({ title: 1 })
@@ -42,16 +40,13 @@ exports.bookList = asyncHandler(async (req, res, next) => {
   res.render("catalog/bookList", { title: "Book List", book_list: allBooks });
 });
 
-// 显示特定书籍的详细信息页面。
 exports.bookDetail = asyncHandler(async (req, res, next) => {
-  // 获取书籍的详细信息，以及特定书籍的实例
   const [book, bookInstances] = await Promise.all([
     Book.findById(req.params.id).populate("author").populate("genre").exec(),
     BookInstance.find({ book: req.params.id }).exec(),
   ]);
 
   if (book === null) {
-    // 没有结果。
     const err = new Error("Book not found");
     err.status = 404;
     return next(err);
@@ -64,33 +59,110 @@ exports.bookDetail = asyncHandler(async (req, res, next) => {
   });
 });
 
-
-// 通过 GET 显示创建图书。
+// Display book create form on GET.
 exports.bookCreateGET = asyncHandler(async (req, res, next) => {
-  res.send("未实现：创建图书 GET");
+  // Get all authors and genres, which we can use for adding to our book.
+  const [allAuthors, allGenres] = await Promise.all([
+    Author.find().sort({ family_name: 1 }).exec(),
+    Genre.find().sort({ name: 1 }).exec(),
+  ]);
+
+  res.render("catalog/bookForm", {
+    title: "Create Book",
+    authors: allAuthors,
+    genres: allGenres,
+  });
 });
 
-// 以 POST 方式处理创建图书。
-exports.bookCreatePOST = asyncHandler(async (req, res, next) => {
-  res.send("未实现：Book 创建 POST");
-});
+// Handle book create on POST.
+exports.bookCreatePOST = [
+  // Convert the genre to an array.
+  (req, res, next) => {
+    if (!Array.isArray(req.body.genre)) {
+      req.body.genre =
+        typeof req.body.genre === "undefined" ? [] : [req.body.genre];
+    }
+    next();
+  },
+
+  // Validate and sanitize fields.
+  body("title", "Title must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("author", "Author must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("summary", "Summary must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("isbn", "ISBN must not be empty").trim().isLength({ min: 1 }).escape(),
+  body("genre.*").escape(),
+  // Process request after validation and sanitization.
+
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create a Book object with escaped and trimmed data.
+    const book = new Book({
+      title: req.body.title,
+      author: req.body.author,
+      summary: req.body.summary,
+      isbn: req.body.isbn,
+      genre: req.body.genre,
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/error messages.
+
+      // Get all authors and genres for form.
+      const [allAuthors, allGenres] = await Promise.all([
+        Author.find().sort({ family_name: 1 }).exec(),
+        Genre.find().sort({ name: 1 }).exec(),
+      ]);
+
+      // Mark our selected genres as checked.
+      for (const genre of allGenres) {
+        if (book.genre.includes(genre._id)) {
+          genre.checked = "true";
+        }
+      }
+      res.render("catalog/bookForm", {
+        title: "Create Book",
+        authors: allAuthors,
+        genres: allGenres,
+        book: book,
+        errors: errors.array(),
+      });
+      return;
+    }
+
+    // Data from form is valid. Save book.
+    await book.save();
+    res.redirect(book.url);
+  }),
+];
+
 
 // 通过 GET 显示删除图书。
 exports.bookDeleteGET = asyncHandler(async (req, res, next) => {
-  res.send("未实现：删除 GET");
+  res.render('404', { title: 'Not Implemented yet: Book Delete GET' });
 });
 
 // 以 POST 方式处理删除图书。
 exports.bookDeletePOST = asyncHandler(async (req, res, next) => {
-  res.send("未实现：删除 POST");
+  res.render('404', { title: 'Not Implemented yet: Book Delete POST' });
 });
 
 // 通过 GET 显示更新图书。
 exports.bookUpdateGET = asyncHandler(async (req, res, next) => {
-  res.send("未实现：更新图书 GET");
+  res.render('404', { title: 'Not Implemented yet: Book Update GET' });
 });
 
 // 处理 POST 时的更新图书。
 exports.bookUpdatePOST = asyncHandler(async (req, res, next) => {
-  res.send("未实现：更新图书 POST");
+  res.render('404', { title: 'Not Implemented yet: Book Update POST' });
 });

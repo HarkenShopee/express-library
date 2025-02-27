@@ -1,19 +1,16 @@
-const genre = require("../models/genre");
 const asyncHandler = require("express-async-handler");
 const Genre = require("../models/genre");
 const Book = require("../models/book");
+const { body, validationResult } = require("express-validator");
 
-// 显示所有的流派。
 exports.genreList = asyncHandler(async (req, res, next) => {
   const genres = await Genre.find().exec();
-  console.log(`[ep] genreList: ${genres.length}`);
   res.render("catalog/genreList", { 
     title: "Book Instance List",
     genres_list: genres
   });
 });
 
-// Display detail page for a specific Genre.
 exports.genreDetail = asyncHandler(async (req, res, next) => {
   try {
     const [genre, genre_books] = await Promise.all([
@@ -37,33 +34,67 @@ exports.genreDetail = asyncHandler(async (req, res, next) => {
   }
 });
 
+exports.genreCreateGET = (req, res, next) => {
+  res.render("catalog/genreForm", { title: "Create Genre" });
+};
 
-// 通过 GET 显示创建流派。
-exports.genreCreateGET = asyncHandler(async (req, res, next) => {
-  res.send("未实现：流派创建 GET");
-});
+exports.genreCreatePOST = [
+  // Validate and sanitize the name field.
+  body("name", "Genre name must contain at least 3 characters")
+    .trim()
+    .isLength({ min: 3 })
+    .escape(),
 
-// 以 POST 方式处理创建流派。
-exports.genreCreatePOST = asyncHandler(async (req, res, next) => {
-  res.send("未实现：流派创建 POST");
-});
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create a genre object with escaped and trimmed data.
+    const genre = new Genre({ name: req.body.name });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render the form again with sanitized values/error messages.
+      res.render("catalog/genreForm", {
+        title: "Create Genre",
+        genre: genre,
+        errors: errors.array(),
+      });
+      return;
+    }
+
+    // Data from form is valid.
+    // Check if Genre with same name already exists.
+    const genreExists = await Genre.findOne({ name: req.body.name })
+      .collation({ locale: "en", strength: 2 })
+      .exec();
+    if (genreExists) {
+      // Genre exists, redirect to its detail page.
+      res.redirect(genreExists.url);
+    } else {
+      await genre.save();
+      // New genre saved. Redirect to genre detail page.
+      res.redirect(genre.url);
+    }
+  }),
+];
 
 // 通过 GET 显示流派删除表单。
 exports.genreDeleteGET = asyncHandler(async (req, res, next) => {
-  res.send("未实现：流派删除 GET");
+  res.render("404", { title: "Genre Delete Not Implemented" });
 });
 
 // 处理 POST 时的流派删除。
 exports.genreDeletePOST = asyncHandler(async (req, res, next) => {
-  res.send("未实现：流派删除 POST");
+  res.render("404", { title: "Genre Delete Not Implemented" });
 });
 
 // 通过 GET 显示流派更新表单。
 exports.genreUpdateGET = asyncHandler(async (req, res, next) => {
-  res.send("未实现：流派更新 GET");
+  res.render("404", { title: "Genre Update Not Implemented" });
 });
 
 // 处理 POST 上的流派更新。
 exports.genreUpdatePOST = asyncHandler(async (req, res, next) => {
-  res.send("未实现：流派更新 POST");
+  res.render("404", { title: "Genre Update Not Implemented" })
 });
