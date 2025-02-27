@@ -7,7 +7,7 @@ const logger = require('morgan');
 const mongoose = require('mongoose');
 const compression = require('compression');
 const helmet = require('helmet');
-const rateLimit = require("express-rate-limit");
+// const rateLimit = require("express-rate-limit");
 
 // create express app
 const app = express();
@@ -22,9 +22,6 @@ if (process.env.NODE_ENV === 'production') {
   app.use(helmet());
 
   app.use('/public', express.static(path.join(__dirname, 'public'), { maxAge: '1y', etag: true }));
-  
-  const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
-  app.use(limiter);
 } else {
   // static public folder
   app.use('/public', express.static(path.join(__dirname, 'public')));
