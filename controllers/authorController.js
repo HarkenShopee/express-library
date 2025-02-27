@@ -4,45 +4,41 @@ const Book = require('../models/book');
 const { body, validationResult } = require("express-validator");
 
 // Display list of all Authors.
-exports.authorList = function (req, res, next) {
-    Author.find()
-      .sort([["last_name", "ascending"]])
-      .exec()
-      .then((list_authors) => {
-        //Successful, so render
-        res.render("catalog/authorList", {
-          title: "Author List",
-          author_list: list_authors,
-        });
-      })
-      .catch((err) => {
-        next(err);
+exports.authorList = (req, res, next) => {
+  Author.find()
+    .sort([["last_name", "ascending"]])
+    .exec()
+    .then((list_authors) => {
+      //Successful, so render
+      res.render("catalog/authorList", {
+        title: "Author List",
+        author_list: list_authors,
       });
-  };
-  
-// 呈现指定作者的详情页。
-exports.authorDetail = asyncHandler(async (req, res, next) => {
-    // （并行地）获取作者的详细信息及其所有作品
-    const [author, allBooksByAuthor] = await Promise.all([
-      Author.findById(req.params.id).exec(),
-      Book.find({ author: req.params.id }, "title summary").exec(),
-    ]);
-  
-    if (author === null) {
-      // 没有结果。
-      const err = new Error("Author not found");
-      err.status = 404;
-      return next(err);
-    }
-  
-    res.render("catalog/authorDetail", {
-      title: "Author Detail",
-      author: author,
-      author_books: allBooksByAuthor,
+    })
+    .catch((err) => {
+      next(err);
     });
-  });
+};
   
+exports.authorDetail = asyncHandler(async (req, res, next) => {
+  const [author, allBooksByAuthor] = await Promise.all([
+    Author.findById(req.params.id).exec(),
+    Book.find({ author: req.params.id }, "title summary").exec(),
+  ]);
 
+  if (author === null) {
+    const err = new Error("Author not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  res.render("catalog/authorDetail", {
+    title: "Author Detail",
+    author: author,
+    author_books: allBooksByAuthor,
+  });
+});
+  
 exports.authorCreateGET = (req, res, next) => {
     res.render('catalog/authorForm', { title: 'Create Author' });
 };
@@ -104,13 +100,46 @@ exports.authorCreatePOST = [
   }),
 ];
 
-  
+// Handle Author delete on POST.
 exports.authorDeleteGET = asyncHandler(async (req, res, next) => {
-    res.render('404', { title: 'Not implemented yet: Delete Author GET'});
+  // Get details of author and all their books (in parallel)
+  const [author, allBooksByAuthor] = await Promise.all([
+    Author.findById(req.params.id).exec(),
+    Book.find({ author: req.params.id }, "title summary").exec(),
+  ]);
+
+  if (author === null) {
+    // No results.
+    res.redirect("/catalog/authors");
+  }
+
+  res.render("catalog/authorDelete", {
+    title: "Delete Author",
+    author: author,
+    author_books: allBooksByAuthor,
+  });
 });
-  
+
 exports.authorDeletePOST = asyncHandler(async (req, res, next) => {
-    res.render('404', { title: 'Not implemented yet: Delete Author POST'});
+  // Get details of author and all their books (in parallel)
+  const [author, allBooksByAuthor] = await Promise.all([
+    Author.findById(req.params.id).exec(),
+    Book.find({ author: req.params.id }, "title summary").exec(),
+  ]);
+
+  if (allBooksByAuthor.length > 0) {
+    // Author has books. Render in same way as for GET route.
+    res.render("author_delete", {
+      title: "Delete Author",
+      author: author,
+      author_books: allBooksByAuthor,
+    });
+    return;
+  }
+
+  // Author has no books. Delete object and redirect to the list of authors.
+  await Author.findByIdAndDelete(req.body.authorid);
+  res.redirect("/catalog/authors");
 });
   
 exports.authorUpdateGET = asyncHandler(async (req, res, next) => {
