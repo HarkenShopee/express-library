@@ -48,7 +48,7 @@ app.use('/wiki', wikiRouter);
 app.use('/catalog', catalogRouter);
 
 // db
-const mongoDB = 'mongodb://localhost:27017/express_db';
+const mongoDB = 'mongodb://127.0.0.1:27017/express_db';
 mongoose.connect(mongoDB);
 mongoose.Promise = global.Promise;
 const db = mongoose.connection;
